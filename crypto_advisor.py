@@ -48,8 +48,14 @@ def respond_to_query(user_query):
             return f"⏳ For long-term growth, you might consider {best_choices[0]}. It has strong market support and good profit potential. 💰"
         else:
             return "🤔 I couldn't find a good option for long-term investment based on the data I have."
+        
+    elif "Available coins" in user_query or "list all coins available" in user_query:
+        # List all available coins
+        available_coins = ", ".join(crypto_db.keys())
+        return f"💰 Available coins: {available_coins}. You can ask about their trends, sustainability, or long-term growth potential. 📊"
 
     elif "defination" in user_query or "what is" in user_query:
+
         # Always return the same message for any definition request
         return "❓ Sorry, I couldn't find any defenition for that. Please ask about sustainability, trends, or long-term growth. 🤖"
 
