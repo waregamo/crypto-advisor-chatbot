@@ -66,14 +66,29 @@ def analyze_query(user_query):
     # Check for sustainability related queries
     if any(word in query for word in ["sustainable", "green", "eco", "environment"]):
         coin = get_sustainable_crypto()
-        return f"🌱 {coin} is your best bet for sustainability! It has a sustainability score of {crypto_db[coin]['sustainability_score']*10}/10."
+        coin_data = crypto_db[coin]
+        return (
+            f"🌱 {coin} is the most sustainable cryptocurrency!\n"
+            f"- Sustainability Score: {coin_data['sustainability_score']*10}/10\n"
+            f"- Energy Usage: {coin_data['energy_use']}\n"
+            f"- Market Status: Price {coin_data['price_trend']}, {coin_data['market_cap']} market cap\n"
+            f"💡 This coin is eco-friendly and has great long-term potential!"
+        )
     
     # Check for trend related queries
     if any(word in query for word in ["trending", "trend", "rising", "up"]):
         trending = get_trending_crypto()
         if trending:
-            return f"📈 These coins are trending up: {', '.join(trending)}"
-        return "No coins are currently trending up."
+            response = ["📈 Hot Trending Cryptocurrencies:"]
+            for coin in trending:
+                coin_data = crypto_db[coin]
+                response.extend([
+                    f"- {coin}:",
+                    f"  • Market Cap: {coin_data['market_cap']}",
+                    f"  • Sustainability: {coin_data['sustainability_score']*10}/10"
+                ])
+            return "\n".join(response)
+        return "📉 No coins are currently trending up. Consider checking back later or looking at long-term investment options."
     
     # Check for investment/profitability related queries
     if any(word in query for word in ["invest", "profit", "long", "term", "growth"]):
