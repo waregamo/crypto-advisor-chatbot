@@ -21,9 +21,52 @@ crypto_db = {
 }
 
 # 2. Define chatbot logic
+
+def get_crypto_data(coin):
+    "Retrieve data for a specific cryptocurrency."
+    if coin not in crypto_db:
+        return None # Return None if coin not found     
+    return crypto_db[coin]
+
+def get_sustainable_crypto():
+    "Find the most sustainable cryptocurrency."
+    return max(crypto_db, key=lambda x: crypto_db[x]["sustainability_score"])
+
+def get_trending_crypto():
+    """Find cryptocurrencies with rising price trends."""
+    return [coin for coin in crypto_db if crypto_db[coin]["price_trend"] == "rising"]
+
+def get_profitable_investment():
+    "Find cryptocurrencies good for long-term investment."
+    return [coin for coin in crypto_db 
+            if crypto_db[coin]["price_trend"] == "rising" 
+            and crypto_db[coin]["market_cap"] == "high"]
+
 def respond_to_query(user_query):
     user_query = user_query.lower()
+    common_cryptos = ['bitcoin', 'ethereum', 'cardano', 'dogecoin', 'pi', 'humancoin', 'ripple', 'solana', 'polkadot', 'worldcoin', 'bnb', 'tether']
 
+    # check for unknown crypto names
+    for crypto in common_cryptos:
+        if crypto in user_query and crypto.title() not in crypto_db:
+            return f"Sorry, {crypto.title()} is not in my database. I can only provide information about: {', '.join(crypto_db.keys())}"
+        
+    # check how many coins are in the database
+    if "how many" in user_query or "how many coins" in user_query:
+        return f"There are {len(crypto_db)} cryptocurrencies in my database: {', '.join(crypto_db.keys())}."
+    elif any(coin.lower() in user_query for coin in crypto_db):
+        for coin in crypto_db:
+           if coin.lower() in user_query:
+            data = get_crypto_data(coin)
+            return (
+                f"🔍 Here's what I found about {coin}:\n"
+                f"- Price trend: {data['price_trend']}\n"
+                f"- Market cap: {data['market_cap']}\n"
+                f"- Energy use: {data['energy_use']}\n"
+                f"- Sustainability: {data['sustainability_score']*10}/10"
+            )
+
+    # Check for sustainability-related queries
     if "sustainable" in user_query or "eco" in user_query or "green" in user_query:
         recommend = max(crypto_db, key=lambda coin: crypto_db[coin]["sustainability_score"])
         coin_data = crypto_db[recommend]
@@ -88,6 +131,7 @@ def respond_to_query(user_query):
             "- Energy consumption information\n"
             "What would you like to know?"
         )
+
 
 # 3. Run chatbot interaction
 print("👋 Hi, I’m CryptoBuddy, your crypto advisor! 🤖")
