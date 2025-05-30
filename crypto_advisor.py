@@ -1,5 +1,3 @@
-# Crypto Advisor Chatbot
-
 # 1. Predefined crypto dataset
 crypto_db = {
     "Bitcoin": {
@@ -70,7 +68,6 @@ def respond_to_query(user_query):
 
     # Check for sustainability-related queries
     if "sustainable" in user_query or "eco" in user_query or "green" in user_query:
-        # Find the coin with the highest sustainability score
         recommend = max(crypto_db, key=lambda coin: crypto_db[coin]["sustainability_score"])
         coin_data = crypto_db[recommend]
         return (
@@ -96,7 +93,6 @@ def respond_to_query(user_query):
         return "📉 No coins are trending up at the moment. Consider looking at long-term investment options."
 
     elif "long-term" in user_query or "investment" in user_query:
-        # Choose coins that are rising and have a high market cap
         best_choices = [
             coin for coin in crypto_db
             if crypto_db[coin]["price_trend"] == "rising" and crypto_db[coin]["market_cap"] == "high"
@@ -119,6 +115,13 @@ def respond_to_query(user_query):
             return f"⚡ Low energy consumption coins: {', '.join(low_energy)}\nThese are more environmentally friendly options!"
         return "⚡ Currently no coins with low energy usage in our database."
 
+    elif "available coins" in user_query or "list all coins" in user_query:
+        available_coins = ", ".join(crypto_db.keys())
+        return f"💰 Available coins: {available_coins}. You can ask about their trends, sustainability, or long-term growth potential. 📊"
+
+    elif "definition" in user_query or "what is" in user_query:
+        return "❓ Sorry, I couldn't find a definition for that. Please ask about sustainability, trends, or long-term growth. 🤖"
+
     else:
         return (
             "❓ I can help you with:\n"
@@ -131,7 +134,7 @@ def respond_to_query(user_query):
 
 
 # 3. Run chatbot interaction
-print("Hi, I’m CryptoBuddy, your crypto advisor!")
+print("👋 Hi, I’m CryptoBuddy, your crypto advisor! 🤖")
 print("You can ask me things like: 'Which crypto is trending up?' or 'What’s the most sustainable coin?'\n")
 
 while True:
@@ -141,5 +144,6 @@ while True:
         break
     response = respond_to_query(user_input)
     print("CryptoBuddy:", response)
+
 
 
