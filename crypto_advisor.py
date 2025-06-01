@@ -23,97 +23,55 @@ crypto_db = {
 # 2. Define chatbot logic
 def respond_to_query(user_query):
     user_query = user_query.lower()
-    common_cryptos = ['bitcoin', 'ethereum', 'cardano', 'dogecoin', 'pi', 'humancoin', 'ripple', 'solana', 'polkadot', 'worldcoin', 'bnb', 'tether']
 
-    # check for unknown crypto names
-    for crypto in common_cryptos:
-        if crypto in user_query and crypto.title() not in crypto_db:
-            return f"Sorry, {crypto.title()} is not in my database. I can only provide information about: {', '.join(crypto_db.keys())}"
-        
-    # check how many coins are in the database
-    if "how many" in user_query or "how many coins" in user_query:
-        return f"There are {len(crypto_db)} cryptocurrencies in my database: {', '.join(crypto_db.keys())}."
-    elif any(coin.lower() in user_query for coin in crypto_db):
-        for coin in crypto_db:
-           if coin.lower() in user_query:
-            data = get_crypto_data(coin)
-            return (
-                f"🔍 Here's what I found about {coin}:\n"
-                f"- Price trend: {data['price_trend']}\n"
-                f"- Market cap: {data['market_cap']}\n"
-                f"- Energy use: {data['energy_use']}\n"
-                f"- Sustainability: {data['sustainability_score']*10}/10"
-            )
-
-    # Check for sustainability-related queries
-    if "sustainable" in user_query or "eco" in user_query or "green" in user_query:
+    # Sustainability & Energy Use questions
+    if any(kw in user_query for kw in ["sustainable", "least energy", "environmentally friendly", "greenest", "eco"]):
         recommend = max(crypto_db, key=lambda coin: crypto_db[coin]["sustainability_score"])
-        coin_data = crypto_db[recommend]
-        return (
-            f"🌱 I recommend {recommend}!\n"
-            f"- Sustainability Score: {coin_data['sustainability_score']*10}/10\n"
-            f"- Energy Usage: {coin_data['energy_use']}\n"
-            f"- Current Status: Price {coin_data['price_trend']}, {coin_data['market_cap']} market cap\n"
-            f"This coin is eco-friendly and has good potential for the future!"
-        )
+        energy_use_low = [coin for coin in crypto_db if crypto_db[coin]["energy_use"] == "low"]
+        response_parts = []
+        if "least energy" in user_query or "energy" in user_query:
+            if energy_use_low:
+                response_parts.append(f"The coin(s) using the least energy: {', '.join(energy_use_low)}.")
+            else:
+                response_parts.append("No coins with low energy use found.")
+        if any(kw in user_query for kw in ["sustainable", "environmentally friendly", "greenest", "eco"]):
+            response_parts.append(f"I recommend {recommend}. It is eco-friendly and has good potential for the future.")
+        return " ".join(response_parts)
 
-    elif "trending" in user_query or "rising" in user_query:
+    # Trending & Profitability questions
+    elif any(kw in user_query for kw in ["trending up", "rising in price", "trending", "rising"]):
         trending_coins = [coin for coin in crypto_db if crypto_db[coin]["price_trend"] == "rising"]
         if trending_coins:
-            response = ["📈 Currently trending cryptocurrencies:"]
-            for coin in trending_coins:
-                data = crypto_db[coin]
-                response.append(
-                    f"- {coin}:\n"
-                    f"  • Market Cap: {data['market_cap']}\n"
-                    f"  • Sustainability: {data['sustainability_score']*10}/10"
-                )
-            return "\n".join(response)
-        return "📉 No coins are trending up at the moment. Consider looking at long-term investment options."
+            return f"The coins that are currently trending up are: {', '.join(trending_coins)}."
+        else:
+            return "There are no coins trending up at the moment."
 
-    elif "long-term" in user_query or "investment" in user_query:
+    elif any(kw in user_query for kw in ["good coin for making profit", "high market cap and is trending", "good for profit"]):
         best_choices = [
             coin for coin in crypto_db
             if crypto_db[coin]["price_trend"] == "rising" and crypto_db[coin]["market_cap"] == "high"
         ]
         if best_choices:
-            coin = best_choices[0]
-            data = crypto_db[coin]
-            return (
-                f"💰 For long-term growth, I recommend {coin}:\n"
-                f"- Strong market cap: {data['market_cap']}\n"
-                f"- Price trend: {data['price_trend']}\n"
-                f"- Sustainability: {data['sustainability_score']*10}/10\n"
-                f"This coin shows good stability and growth potential."
-            )
-        return "⚠️ Currently no coins meet our criteria for safe long-term investment."
+            return f"For profit, consider {best_choices[0]}. It is trending and has a high market cap."
+        else:
+            return "I couldn't find a good coin for profit based on the data."
 
-    elif "energy" in user_query or "power" in user_query:
-        low_energy = [coin for coin in crypto_db if crypto_db[coin]["energy_use"] == "low"]
-        if low_energy:
-            return f"⚡ Low energy consumption coins: {', '.join(low_energy)}\nThese are more environmentally friendly options!"
-        return "⚡ Currently no coins with low energy usage in our database."
-
-    elif "available coins" in user_query or "list all coins" in user_query:
-        available_coins = ", ".join(crypto_db.keys())
-        return f"💰 Available coins: {available_coins}. You can ask about their trends, sustainability, or long-term growth potential. 📊"
-
-    elif "definition" in user_query or "what is" in user_query:
-        return "❓ Sorry, I couldn't find a definition for that. Please ask about sustainability, trends, or long-term growth. 🤖"
+    # Long-Term Investment questions
+    elif any(kw in user_query for kw in ["long-term growth", "long-term profits", "strong future potential", "invest in for long-term"]):
+        best_choices = [
+            coin for coin in crypto_db
+            if crypto_db[coin]["price_trend"] == "rising" and crypto_db[coin]["market_cap"] == "high"
+        ]
+        if best_choices:
+            return f"For long-term growth, consider {best_choices[0]}. It has strong market support and good profit potential."
+        else:
+            return "I couldn't find a good option for long-term investment based on the data."
 
     else:
-        return (
-            "❓ I can help you with:\n"
-            "- Sustainability (eco-friendly coins)\n"
-            "- Current trends (rising prices)\n"
-            "- Long-term investment recommendations\n"
-            "- Energy consumption information\n"
-            "What would you like to know?"
-        )
-
+        return "Sorry, I didn't understand your question. Please ask about sustainability, trends, profitability, or long-term growth."
 
 # 3. Run chatbot interaction
-print("✨ Hi, I’m CryptoBuddy, your crypto advisor!")
+print("👋 Hi, I’m CryptoBuddy, your crypto advisor!")
 print("You can ask me things like: 'Which crypto is trending up?' or 'What’s the most sustainable coin?'\n")
 
 while True:
@@ -122,7 +80,7 @@ while True:
         print("CryptoBuddy: Goodbye! Remember to always research before you invest.")
         break
     response = respond_to_query(user_input)
-    print("CryptoBuddy:", response)
-
+    print("🤖 CryptoBuddy:", response)
+ 
 
 
